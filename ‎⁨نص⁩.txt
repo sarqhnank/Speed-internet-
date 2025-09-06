@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مفحص السرعة - فحص سرعة الإنترنت</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --background: #f5f7ff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            transform: rotate(30deg);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .description {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .speedtest-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .start-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 25px 0;
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .start-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .start-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.4);
+        }
+        
+        .start-btn:hover::after {
+            transform: translateY(0);
+        }
+        
+        .start-btn:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .results {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            gap: 20px;
+        }
+        
+        .result-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 25px 20px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+        
+        .result-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .result-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .unit {
+            font-size: 1.1rem;
+            color: #6c757d;
+        }
+        
+        .progress-container {
+            height: 25px;
+            background-color: #e9ecef;
+            border-radius: 12px;
+            margin: 30px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .test-status {
+            margin: 25px 0;
+            font-size: 1.3rem;
+            color: var(--dark);
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .quality-indicators {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .quality-box {
+            padding: 15px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .quality-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #6c757d;
+        }
+        
+        .quality-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: auto;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--dark), #2b2d42);
+            color: white;
+        }
+        
+        .footer-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .tips {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            margin: 20px 0;
+            text-align: right;
+        }
+        
+        .tips h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tips ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .tips li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tips li:last-child {
+            border-bottom: none;
+        }
+        
+        .tips i {
+            color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .results {
+                flex-direction: column;
+            }
+            
+            .result-box {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .description {
+                font-size: 1rem;
+            }
+            
+            .start-btn {
+                padding: 15px 35px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tachometer-alt"></i> مفحص السرعة</h1>
+            <p class="description">تطبيق متكامل لفحص أداء اتصالك بالإنترنت بدقة وسهولة</p>
+        </header>
+        
+        <div class="speedtest-container">
+            <p>انقر على الزر أدناه لبدء فحص سرعة الإنترنت الخاص بك</p>
+            <button id="startTest" class="start-btn">
+                <i class="fas fa-play-circle"></i> بدء الفحص الآن
+            </button>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="test-status" id="testStatus">
+                <i class="fas fa-info-circle"></i> في انتظار البدء...
+            </div>
+            
+            <div class="results">
+                <div class="result-box">
+                    <div class="result-title">
+                        <i class="fas fa-signal"></i> زمن الاستجابة
+                    </div>
+                    <div class="result-value" id="pingResult">--</div>
+                    <div class="unit">مللي ثانية</div>
+                </div>
+                
+                <div class="result-box">
+                    <div class="result-title">
+                        <i class="fas fa-download"></i> سرعة التحميل
+                    </div>
+                    <div class="result-value" id="downloadResult">--</div>
+                    <div class="unit">ميجابت/ثانية</div>
+                </div>
+                
+                <div class="result-box">
+                    <div class="result-title">
+                        <i class="fas fa-upload"></i> سرعة الرفع
+                    </div>
+                    <div class="result-value" id="uploadResult">--</div>
+                    <div class="unit">ميجابت/ثانية</div>
+                </div>
+            </div>
+            
+            <div class="quality-indicators">
+                <div class="quality-box">
+                    <div class="quality-title">جودة الاتصال</div>
+                    <div class="quality-value" id="qualityValue">--</div>
+                </div>
+                <div class="quality-box">
+                    <div class="quality-title">السيرفر</div>
+                    <div class="quality-value">الأقرب جغرافيًا</div>
+                </div>
+                <div class="quality-box">
+                    <div class="quality-title">نوع الاتصال</div>
+                    <div class="quality-value" id="connectionType">--</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tips">
+            <h3><i class="fas fa-lightbulb"></i> نصائح لنتيجة أدق</h3>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> أغلق التطبيقات والبرامج التي تستخدم الإنترنت قبل البدء</li>
+                <li><i class="fas fa-check-circle"></i> أوقف أي تحديثات أو تنزيلات خلفية</li>
+                <li><i class="fas fa-check-circle"></i> تأكد من اتصالك مباشرة بالراوتر而不是 عبر الواي فاي للنتائج الأفضل</li>
+                <li><i class="fas fa-check-circle"></i> كرر الاختبار عدة مرات للحصول على متوسط السرعة الحقيقية</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>© 2023 مفحص السرعة - جميع الحقوق محفوظة</p>
+            <p>لنتائج أكثر دقة، ننصح بإجراء الفحص عدة مرات وفي أوقات مختلفة من اليوم</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startBtn = document.getElementById('startTest');
+            const pingResult = document.getElementById('pingResult');
+            const downloadResult = document.getElementById('downloadResult');
+            const uploadResult = document.getElementById('uploadResult');
+            const testStatus = document.getElementById('testStatus');
+            const progressBar = document.getElementById('progressBar');
+            const qualityValue = document.getElementById('qualityValue');
+            const connectionType = document.getElementById('connectionType');
+            
+            // تحديد نوع الاتصال
+            function detectConnectionType() {
+                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                if (connection) {
+                    if (connection.type) {
+                        return connection.type;
+                    } else if (connection.effectiveType) {
+                        return connection.effectiveType;
+                    }
+                }
+                return 'غير معروف';
+            }
+            
+            connectionType.textContent = detectConnectionType();
+            
+            startBtn.addEventListener('click', startSpeedTest);
+            
+            function startSpeedTest() {
+                // تعطيل الزر أثناء الاختبار
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> جاري الفحص...';
+                
+                // إعادة تعيين النتائج
+                pingResult.textContent = '--';
+                downloadResult.textContent = '--';
+                uploadResult.textContent = '--';
+                qualityValue.textContent = '--';
+                
+                // بدء عملية الفحص
+                testStatus.innerHTML = '<i class="fas fa-cog fa-spin"></i> جاري التحضير للفحص...';
+                progressBar.style.width = '10%';
+                
+                // محاكاة عملية فحص السرعة
+                simulateSpeedTest();
+            }
+            
+            function simulateSpeedTest() {
+                // هذه محاكاة لفحص السرعة - في التطبيق الحقيقي، سنستخدم مكتبة أو API لفحص السرعة الفعلي
+                
+                // محاكاة قياس Ping
+                setTimeout(() => {
+                    const ping = Math.floor(Math.random() * 50) + 10;
+                    pingResult.textContent = ping;
+                    testStatus.innerHTML = '<i class="fas fa-cog fa-spin"></i> جاري قياس سرعة التحميل...';
+                    progressBar.style.width = '40%';
+                    
+                    // محاكاة قياس Download
+                    setTimeout(() => {
+                        const download = (Math.random() * 90 + 10).toFixed(2);
+                        downloadResult.textContent = download;
+                        testStatus.innerHTML = '<i class="fas fa-cog fa-spin"></i> جاري قياس سرعة الرفع...';
+                        progressBar.style.width = '70%';
+                        
+                        // محاكاة قياس Upload
+                        setTimeout(() => {
+                            const upload = (Math.random() * 40 + 5).toFixed(2);
+                            uploadResult.textContent = upload;
+                            testStatus.innerHTML = '<i class="fas fa-check-circle"></i> اكتمل الفحص بنجاح!';
+                            progressBar.style.width = '100%';
+                            
+                            // تحديد جودة الاتصال بناء على النتائج
+                            const speed = parseFloat(download);
+                            if (speed < 10) {
+                                qualityValue.textContent = 'ضعيفة';
+                                qualityValue.style.color = '#dc3545';
+                            } else if (speed < 30) {
+                                qualityValue.textContent = 'متوسطة';
+                                qualityValue.style.color = '#fd7e14';
+                            } else if (speed < 60) {
+                                qualityValue.textContent = 'جيدة';
+                                qualityValue.style.color = '#20c997';
+                            } else {
+                                qualityValue.textContent = 'ممتازة';
+                                qualityValue.style.color = '#0d6efd';
+                            }
+                            
+                            // إعادة تمكين الزر
+                            startBtn.disabled = false;
+                            startBtn.innerHTML = '<i class="fas fa-redo"></i> بدء فحص جديد';
+                        }, 2000);
+                    }, 3000);
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>
